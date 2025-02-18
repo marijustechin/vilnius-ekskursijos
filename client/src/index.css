@@ -1,0 +1,54 @@
+@import url("https://fonts.googleapis.com/css2?family=Andika:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    font-family: "Andika", serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  h1 {
+    @apply text-4xl text-violet-800 font-semibold text-center my-4;
+  }
+
+  h2 {
+    @apply text-3xl font-semibold mb-2 text-violet-800 text-center;
+  }
+
+  h3 {
+    @apply text-2xl font-semibold text-violet-800 text-center;
+  }
+}
+
+@layer components {
+  .w-container {
+    @apply max-w-6xl mx-auto px-1 md:px-2;
+  }
+
+  .shadow-text {
+    @apply [text-shadow:1px_1px_2px_var(--tw-shadow-color)] shadow-slate-800;
+  }
+
+  .form-input {
+    @apply w-full rounded-lg py-1 px-3 focus:outline-none border border-slate-400;
+  }
+
+  .auth-form {
+    @apply max-w-sm mx-auto flex flex-col gap-2 shadow-sm px-2 py-1 shadow-slate-300 rounded-lg my-3;
+  }
+
+  .form-error {
+    @apply text-sm text-rose-500 text-center w-full;
+  }
+
+  .btn-generic {
+    @apply border border-slate-300 bg-slate-200 rounded-lg py-1 px-2 hover:bg-slate-300 cursor-pointer;
+  }
+
+  .btn-link {
+    @apply underline underline-offset-4 cursor-pointer text-slate-500 hover:text-slate-800;
+  }
+}
