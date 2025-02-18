@@ -1,9 +1,9 @@
-const bcrypt = require("bcryptjs");
-const sequelize = require("../db");
+const bcrypt = require('bcryptjs');
+const sequelize = require('../db');
 const { user, role, user_secret } = sequelize.models;
-const ApiError = require("../exceptions/api.errors");
-const UserDto = require("../dtos/user.dto");
-const tokenService = require("../services/token.service");
+const ApiError = require('../exceptions/api.errors');
+const UserDto = require('../dtos/user.dto');
+const tokenService = require('../services/token.service');
 
 class UserService {
   async #getUserByEmail(email) {
@@ -14,13 +14,13 @@ class UserService {
   }
 
   async #getRoleId() {
-    const roleId = await role.findOne({ where: { role_name: "USER" } });
+    const roleId = await role.findOne({ where: { role_name: 'USER' } });
 
     if (roleId) {
       return roleId.id;
     } // nei nera, sukuriam
     else {
-      const defaultRole = await role.create({ role_name: "USER" });
+      const defaultRole = await role.create({ role_name: 'USER' });
 
       return defaultRole.id;
     }
@@ -56,7 +56,7 @@ class UserService {
     const userDto = await UserDto.init(newUser);
     const tokens = tokenService.generateTokens({ ...userDto });
 
-    return { ...tokens, userDto };
+    return { ...tokens, user: userDto };
   }
 
   /**
