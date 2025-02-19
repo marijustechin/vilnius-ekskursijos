@@ -105,6 +105,25 @@ class UserService {
     return { ...tokens, user: { id: userDto.id, role: userDto.role } };
   }
 
+  async tokenRefresh(refreshToken) {
+    const userData = tokenService.validateRefreshToken(refreshToken);
+
+    const tokenFromDb = await tokenService.findToken(refreshToken);
+    if (!userData || !tokenFromDb) throw ApiError.UnauthorizedError();
+
+    const activeUser = await user.findOne({ where: { id: userData.id } });
+    const userDto = await UserDto.init(activeUser);
+
+    const tokens = tokenService.generateTokens({
+      id: userDto.id,
+      role: userDto.role,
+    });
+
+    await tokenService.saveRefreshToken(userDto.id, tokens.refreshToken);
+
+    return { ...tokens, user: { id: userDto.id, role: userDto.role } };
+  }
+
   /**
    * Naudotojo isregistravimas
    * @param {*} userId

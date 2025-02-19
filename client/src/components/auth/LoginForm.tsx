@@ -1,14 +1,10 @@
-import * as z from 'zod';
-import { UserLogin } from '../../schemas/user';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useAppDispatch, useAppSelector } from '../../store/store';
-import {
-  getUserError,
-  getUserStatus,
-  login,
-  selectUser,
-} from '../../store/user/userSlice';
+import * as z from "zod";
+import { UserLogin } from "../../schemas/user";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { RootState, useAppDispatch, useAppSelector } from "../../store/store";
+
+import { loginUser } from "../../store/features/user/authSlice";
 
 interface LoginFormProps {
   onClose: () => void;
@@ -16,9 +12,7 @@ interface LoginFormProps {
 
 export const LoginForm = ({ onClose }: LoginFormProps) => {
   const dispatch = useAppDispatch();
-  const user = useAppSelector(selectUser);
-  const error = useAppSelector(getUserError);
-  const status = useAppSelector(getUserStatus);
+  const { status, error } = useAppSelector((state: RootState) => state.auth);
 
   const {
     register,
@@ -28,8 +22,8 @@ export const LoginForm = ({ onClose }: LoginFormProps) => {
   } = useForm<z.infer<typeof UserLogin>>({
     resolver: zodResolver(UserLogin),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
   });
 
@@ -37,16 +31,15 @@ export const LoginForm = ({ onClose }: LoginFormProps) => {
     formData
   ) => {
     const { email, password } = formData;
-
-    if (status === 'idle') dispatch(login({ email, password }));
-    console.log(user);
+    dispatch(loginUser({ email, password }));
+    if (error) setError("root", { message: error });
     console.log(status);
-    console.log(error);
-    if (error) {
-      setError('root', { message: error });
-      return;
-    }
   };
+
+  //   Next Steps
+  // Protect Routes using React Router and Redux state.
+  // Token Refresh Logic if needed.
+  // Style the Components using Tailwind, Material-UI, or your preferred styling method.
 
   return (
     <form className="auth-form" noValidate onSubmit={handleSubmit(onSubmit)}>
@@ -65,7 +58,7 @@ export const LoginForm = ({ onClose }: LoginFormProps) => {
           id="email"
           className="form-input"
           type="email"
-          {...register('email')}
+          {...register("email")}
         />
         {errors.email && (
           <span className="form-error">{errors.email.message}</span>
@@ -78,7 +71,7 @@ export const LoginForm = ({ onClose }: LoginFormProps) => {
           id="password"
           className="form-input"
           type="password"
-          {...register('password')}
+          {...register("password")}
         />
         {errors.password && (
           <span className="form-error">{errors.password.message}</span>

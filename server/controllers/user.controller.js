@@ -90,6 +90,49 @@ class UserController {
       next(e);
     }
   }
+
+  async refresh(req, res, next) {
+    try {
+      const { refreshToken } = req.cookies;
+
+      if (!refreshToken)
+        throw ApiError.UnauthorizedError("Neprisijungęs naudotojas");
+
+      const userData = await userService.tokenRefresh(refreshToken);
+
+      // refreshToken dedam i cookies
+      res.cookie("refreshToken", userData.refreshToken, {
+        maxAge: 24 * 60 * 60 * 1000, // 1 diena
+        // httpOnly pasako serveriui, kad cookie esanti informacija
+        // neturi buti siunciama uz serverio ribu
+        // ir kad serveris turi nerodyti, kas viduje
+        httpOnly: true,
+      });
+
+      return res.status(200).json(userData);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  // async refresh(req, res, next) {
+  //   try {
+
+  //     // refreshToken dedam i cookies
+  //     res.cookie("refreshToken", userData.refreshToken, {
+  //       maxAge: 24 * 60 * 60 * 1000, // 1 diena
+  //       // httpOnly pasako serveriui, kad cookie esanti informacija
+  //       // neturi buti siunciama uz serverio ribu
+  //       // ir kad serveris turi nerodyti, kas viduje
+  //       httpOnly: true,
+  //     });
+
+  //     res.status(200).json(userData);
+  //   } catch (e) {
+  //     next(e);
+  //   }
+
+  // }
 }
 
 module.exports = new UserController();

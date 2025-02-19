@@ -14,6 +14,9 @@ userRouter.post("/login", validator.login, userController.login);
 // naudotoju atsijungimas
 userRouter.post("/logout", userController.logout);
 
+// atnaujinam tokena
+userRouter.post("/refresh", userController.refresh);
+
 // naudotoju sarasas - gali gauti tik autorizuoti naudotojai
 // userRouter.get('/', userController.getAll);
 // // naudotojas paga id
@@ -27,9 +30,6 @@ userRouter.post("/logout", userController.logout);
 
 // // atsijungimas
 // userRouter.post('/logout', userController.logout);
-
-// // refresh token
-// userRouter.post('/refresh', userController.refresh);
 
 // // naudotojo modifikavimas
 // userRouter.put('/:id', userController.updateUser);
