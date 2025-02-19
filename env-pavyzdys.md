@@ -13,3 +13,7 @@ JWT_REFRESH_SECRET=labai_secretas
 JWT_REFRESH_EXPIRES=
 
 CLIENT_URL=http://localhost:5173
+
+// TODO
+Protect Routes using React Router and Redux state.
+Token Refresh Logic if needed.
