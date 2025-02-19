@@ -1,9 +1,9 @@
-const bcrypt = require('bcryptjs');
-const sequelize = require('../db');
+const bcrypt = require("bcryptjs");
+const sequelize = require("../db");
 const { user, role, user_secret } = sequelize.models;
-const ApiError = require('../exceptions/api.errors');
-const UserDto = require('../dtos/user.dto');
-const tokenService = require('../services/token.service');
+const ApiError = require("../exceptions/api.errors");
+const UserDto = require("../dtos/user.dto");
+const tokenService = require("../services/token.service");
 
 class UserService {
   async #getUserByEmail(email) {
@@ -14,49 +14,58 @@ class UserService {
   }
 
   async #getRoleId() {
-    const roleId = await role.findOne({ where: { role_name: 'USER' } });
+    const roleId = await role.findOne({ where: { role_name: "USER" } });
 
     if (roleId) {
       return roleId.id;
     } // nei nera, sukuriam
     else {
-      const defaultRole = await role.create({ role_name: 'USER' });
+      const defaultRole = await role.create({ role_name: "USER" });
 
       return defaultRole.id;
     }
   }
 
   /**
-   *
+   * Naudotojo registracija
    * @param {*} first_name
    * @param {*} email
    * @param {*} password
+   * @returns pranesima
    */
   async register(first_name, email, password) {
     // tikrinam ar el. pasto adresas neuzimtas
-    const existingUser = await user.findOne({ where: { email } });
+    const existingUser = await user.findOne({
+      where: { email: email.toLowerCase().trim() },
+    });
 
     if (existingUser)
       throw ApiError.BadRequest(`El. pašto adresas ${email} jau naudojamas`);
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await user.create(
-      {
-        first_name,
-        email,
-        role_id: await this.#getRoleId(),
-        user_secret: [{ password: hashedPassword }],
-      },
-      {
-        include: [user_secret],
-      }
-    );
-
-    const userDto = await UserDto.init(newUser);
-    const tokens = tokenService.generateTokens({ ...userDto });
-
-    return { ...tokens, user: userDto };
+    const transaction = await sequelize.transaction();
+    try {
+      // cia naudojam tranzakcijas
+      // nes rasom duomenis i dvi lenteles
+      await user.create(
+        {
+          first_name,
+          email,
+          role_id: await this.#getRoleId(),
+          user_secret: [{ password: hashedPassword }],
+        },
+        {
+          include: [user_secret],
+          transaction,
+        }
+      );
+      await transaction.commit();
+      return { message: "Registracija sėkminga. Prašome prisijungti." };
+    } catch (e) {
+      await transaction.rollback();
+      throw ApiError.BadRequest("Registracija nepavyko.");
+    }
   }
 
   /**
@@ -86,17 +95,20 @@ class UserService {
 
     const userDto = await UserDto.init(activeUser);
 
-    const tokens = tokenService.generateTokens({ ...userDto });
+    const tokens = tokenService.generateTokens({
+      id: userDto.id,
+      role: userDto.role,
+    });
 
     await tokenService.saveRefreshToken(userDto.id, tokens.refreshToken);
 
-    return { ...tokens, user: userDto };
+    return { ...tokens, user: { id: userDto.id, role: userDto.role } };
   }
 
   /**
    * Naudotojo isregistravimas
-   * @param {*} refreshToken
-   * @returns tokena
+   * @param {*} userId
+   * @returns skaicius, kiek irasu istrinta
    */
   async logout(refreshToken) {
     const token = await tokenService.removeToken(refreshToken);

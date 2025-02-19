@@ -4,9 +4,7 @@ const { token } = sequelize.models;
 
 class TokenService {
   // payload - tai duomenys, kuriuos tures uzsifruotus jwt
-  // cia turetu buti role ir dar kas nors
-  // kol kas perduodamas visas userDto
-  // REIKES PAKEISTI
+  // cia turetu buti role ir naudotojo ID
   generateTokens(payload) {
     const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_SECRET, {
       expiresIn: process.env.JWT_ACCESS_EXPIRES,
@@ -35,13 +33,13 @@ class TokenService {
       return await tokenData.save();
     }
 
-    // jei neturi, sukuriam nauja
-    const tokeN = await token.create({
+    // sunaikinam sena tokena
+    await token.destroy({ where: { user_id } });
+
+    return await token.create({
       refreshToken,
       user_id,
     });
-
-    return tokeN;
   }
 
   validateAccessToken(accessToken) {

@@ -1,6 +1,7 @@
 const { validationResult } = require("express-validator");
 const userService = require("../services/user.service");
 const ApiError = require("../exceptions/api.errors");
+const tokenService = require("../services/token.service");
 
 class UserController {
   /**
@@ -75,11 +76,16 @@ class UserController {
       if (!refreshToken)
         throw ApiError.UnregisteredError("Neprisijungęs naudotojas");
 
-      const token = await userService.logout(refreshToken);
+      // patikrinam, ar tokenas validus
+      const userData = tokenService.validateRefreshToken(refreshToken);
+
+      if (!userData) throw ApiError.BadRequest("Neteisinga užklausa");
+
+      await userService.logout(refreshToken);
 
       res.clearCookie("refreshToken");
 
-      return res.status(200).json(token);
+      return res.status(200).json({ message: "Atsijungimas sėkmingas." });
     } catch (e) {
       next(e);
     }
