@@ -1,14 +1,14 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import AuthService from "../../../services/AuthService";
-import HelperService from "../../../services/HelperService";
-import { RootState } from "../../store";
-import { jwtDecode } from "jwt-decode";
-import { IUser } from "../../../types/user";
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import AuthService from '../../../services/AuthService';
+import HelperService from '../../../services/HelperService';
+import { RootState } from '../../store';
+import { jwtDecode } from 'jwt-decode';
+import { IUser } from '../../../types/user';
 
 interface AuthState {
   user: IUser;
   accessToken: string | null;
-  status: "idle" | "loading" | "succeeded" | "failed";
+  status: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
 }
 
@@ -24,7 +24,7 @@ const isTokenValid = (token: string): boolean => {
 };
 
 // Atstatom useri is local storage **with accessToken**
-const storedToken = localStorage.getItem("accessToken");
+const storedToken = localStorage.getItem('accessToken');
 let restoredUser: IUser = { id: null, role: null };
 let restoredAccessToken: string | null = null;
 
@@ -37,51 +37,48 @@ if (storedToken && isTokenValid(storedToken)) {
 const initialState: AuthState = {
   user: restoredUser,
   accessToken: restoredAccessToken, // Ar verta sita tokena laikyti globaliam state???
-  status: "idle",
+  status: 'idle',
   error: null,
 };
 
 // atkuriam is local storage
 export const restoreSession = createAsyncThunk(
-  "auth/restoreSession",
+  'auth/restoreSession',
   async (_, { rejectWithValue }) => {
     try {
       // Get token from localStorage
-      const oldToken = localStorage.getItem("accessToken");
+      const oldToken = localStorage.getItem('accessToken');
 
       if (oldToken && isTokenValid(oldToken)) {
-        console.log("✅ Token not expired, restoring session...");
         const { id, role } = jwtDecode<{ id: string; role: string }>(oldToken);
         return { accessToken: oldToken, user: { id, role } };
       } else if (oldToken) {
-        console.log("⚠️ Token expired, requesting new one...");
         const newToken = await AuthService.refresh();
-        if (!newToken) throw new Error("Sesija baigėsi...");
+        if (!newToken) throw new Error('Sesija baigėsi...');
 
-        localStorage.setItem("accessToken", newToken);
+        localStorage.setItem('accessToken', newToken);
         const { id, role } = jwtDecode<{ id: string; role: string }>(newToken);
         return { accessToken: newToken, user: { id, role } };
       } else {
-        console.log("❌ No token found, forcing login...");
-        throw new Error("Sesija baigėsi. Prašome prisijungti.");
+        throw new Error('Sesija baigėsi. Prašome prisijungti.');
       }
     } catch (error: unknown) {
       if (error instanceof Error) return rejectWithValue(error.message);
-      return rejectWithValue("Sesija baigėsi. Prašome prisijungti.");
+      return rejectWithValue('Sesija baigėsi. Prašome prisijungti.');
     }
   }
 );
 
 // Login ir dedam accessToken i Redux
 export const loginUser = createAsyncThunk(
-  "auth/login",
+  'auth/login',
   async (
     { email, password }: { email: string; password: string },
     { rejectWithValue }
   ) => {
     try {
       const response = await AuthService.login(email, password);
-      localStorage.setItem("accessToken", response.accessToken);
+      localStorage.setItem('accessToken', response.accessToken);
       return response;
     } catch (error: unknown) {
       return rejectWithValue(HelperService.errorToString(error));
@@ -91,11 +88,11 @@ export const loginUser = createAsyncThunk(
 
 // Atjumgiam
 export const logoutUser = createAsyncThunk(
-  "auth/logout",
+  'auth/logout',
   async (_, { rejectWithValue }) => {
     try {
       await AuthService.logout();
-      localStorage.removeItem("accessToken");
+      localStorage.removeItem('accessToken');
     } catch (error: unknown) {
       return rejectWithValue(HelperService.errorToString(error));
     }
@@ -103,33 +100,33 @@ export const logoutUser = createAsyncThunk(
 );
 
 const authSlice = createSlice({
-  name: "auth",
+  name: 'auth',
   initialState,
   reducers: {
     resetAuthState: (state) => {
       state.user = { id: null, role: null };
       state.accessToken = null; // Pasalinam tokena
-      state.status = "idle";
+      state.status = 'idle';
       state.error = null;
-      localStorage.removeItem("accessToken");
+      localStorage.removeItem('accessToken');
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(loginUser.pending, (state) => {
-        state.status = "loading";
+        state.status = 'loading';
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        state.status = "succeeded";
+        state.status = 'succeeded';
         state.accessToken = action.payload.accessToken; // dedam tokena i reduksa
         state.user = action.payload.user;
       })
       .addCase(loginUser.rejected, (state, action) => {
-        state.status = "failed";
+        state.status = 'failed';
         state.error = action.payload as string;
       })
       .addCase(logoutUser.fulfilled, (state) => {
-        state.status = "idle";
+        state.status = 'idle';
         state.user = { id: null, role: null };
         state.accessToken = null; // pasalinam tokena
       })
@@ -140,7 +137,7 @@ const authSlice = createSlice({
       .addCase(restoreSession.rejected, (state) => {
         state.user = { id: null, role: null };
         state.accessToken = null;
-        localStorage.removeItem("accessToken");
+        localStorage.removeItem('accessToken');
       });
   },
 });

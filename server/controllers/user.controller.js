@@ -1,7 +1,7 @@
-const { validationResult } = require("express-validator");
-const userService = require("../services/user.service");
-const ApiError = require("../exceptions/api.errors");
-const tokenService = require("../services/token.service");
+const { validationResult } = require('express-validator');
+const userService = require('../services/user.service');
+const ApiError = require('../exceptions/api.errors');
+const tokenService = require('../services/token.service');
 
 class UserController {
   /**
@@ -16,7 +16,7 @@ class UserController {
       const errors = validationResult(req);
 
       if (!errors.isEmpty())
-        throw ApiError.BadRequest("Validacijos klaida", errors.array());
+        throw ApiError.BadRequest('Validacijos klaida', errors.array());
 
       const { first_name, email, password } = req.body;
 
@@ -40,7 +40,7 @@ class UserController {
       const errors = validationResult(req);
 
       if (!errors.isEmpty())
-        throw ApiError.BadRequest("Validacijos klaida", errors.array());
+        throw ApiError.BadRequest('Validacijos klaida', errors.array());
 
       // jei nera validacijos klaidu, tesiam
       const { email, password } = req.body;
@@ -48,7 +48,7 @@ class UserController {
       const loggedUser = await userService.login(email, password);
 
       // refreshToken dedam i cookies
-      res.cookie("refreshToken", loggedUser.refreshToken, {
+      res.cookie('refreshToken', loggedUser.refreshToken, {
         maxAge: 24 * 60 * 60 * 1000, // 1 diena
         // httpOnly pasako serveriui, kad cookie esanti informacija
         // neturi buti siunciama uz serverio ribu
@@ -80,13 +80,13 @@ class UserController {
       // patikrinam, ar tokenas validus
       const userData = tokenService.validateRefreshToken(refreshToken);
 
-      if (!userData) throw ApiError.BadRequest("Neteisinga užklausa");
+      if (!userData) throw ApiError.BadRequest('Neteisinga užklausa');
 
       await userService.logout(refreshToken);
 
-      res.clearCookie("refreshToken");
+      res.clearCookie('refreshToken');
 
-      return res.status(200).json({ message: "Atsijungimas sėkmingas." });
+      return res.status(200).json({ message: 'Atsijungimas sėkmingas.' });
     } catch (e) {
       next(e);
     }
@@ -97,30 +97,30 @@ class UserController {
       const { refreshToken } = req.cookies;
 
       if (!refreshToken) {
-        res.clearCookie("refreshToken"); // ✅ Ensure old token is removed
-        throw ApiError.UnauthorizedError("Neprisijungęs naudotojas");
+        res.clearCookie('refreshToken'); // sena tikrai ismetam
+        throw ApiError.UnauthorizedError('Neprisijungęs naudotojas');
       }
 
       const userData = await userService.tokenRefresh(refreshToken);
 
       if (!userData) {
-        res.clearCookie("refreshToken"); // ✅ Remove invalid token
-        throw ApiError.UnauthorizedError("Netinkamas atnaujinimo tokenas");
+        res.clearCookie('refreshToken'); // Ismetam netinkama tokena
+        throw ApiError.UnauthorizedError();
       }
 
-      // ✅ Store new refresh token
-      res.cookie("refreshToken", userData.refreshToken, {
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
+      //
+      res.cookie('refreshToken', userData.refreshToken, {
+        maxAge: 24 * 60 * 60 * 1000, // 1 diena
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // Secure only in production
-        sameSite: "Strict",
+        secure: process.env.NODE_ENV === 'production', // Produksine apsaugom
+        sameSite: 'Strict',
       });
 
       return res
         .status(200)
         .json({ accessToken: userData.accessToken, user: userData.user });
     } catch (e) {
-      res.clearCookie("refreshToken"); // ✅ Always remove invalid tokens
+      res.clearCookie('refreshToken'); // Visada istrinam nereikalinga tokena
       next(e);
     }
   }
@@ -141,7 +141,7 @@ class UserController {
   }
 
   async getAllUsers(req, res, next) {
-    return res.status(200).json("visi useriai");
+    return res.status(200).json('visi useriai');
   }
 }
 

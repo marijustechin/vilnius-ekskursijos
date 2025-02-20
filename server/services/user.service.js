@@ -1,9 +1,9 @@
-const bcrypt = require("bcryptjs");
-const sequelize = require("../db");
+const bcrypt = require('bcryptjs');
+const sequelize = require('../db');
 const { user, role, user_secret } = sequelize.models;
-const ApiError = require("../exceptions/api.errors");
-const UserDto = require("../dtos/user.dto");
-const tokenService = require("../services/token.service");
+const ApiError = require('../exceptions/api.errors');
+const UserDto = require('../dtos/user.dto');
+const tokenService = require('../services/token.service');
 
 class UserService {
   async #getUserByEmail(email) {
@@ -14,13 +14,13 @@ class UserService {
   }
 
   async #getRoleId() {
-    const roleId = await role.findOne({ where: { role_name: "USER" } });
+    const roleId = await role.findOne({ where: { role_name: 'USER' } });
 
     if (roleId) {
       return roleId.id;
     } // nei nera, sukuriam
     else {
-      const defaultRole = await role.create({ role_name: "USER" });
+      const defaultRole = await role.create({ role_name: 'USER' });
 
       return defaultRole.id;
     }
@@ -61,10 +61,10 @@ class UserService {
         }
       );
       await transaction.commit();
-      return { message: "Registracija sėkminga. Prašome prisijungti." };
+      return { message: 'Registracija sėkminga. Prašome prisijungti.' };
     } catch (e) {
       await transaction.rollback();
-      throw ApiError.BadRequest("Registracija nepavyko.");
+      throw ApiError.BadRequest('Registracija nepavyko.');
     }
   }
 
@@ -132,6 +132,11 @@ class UserService {
 
   async getUserById(id, refreshToken) {
     // 1 patikrinam, ar id ir id is tokeno sutampa arba refreshTokeno role yra adminas
+    const currentUser = await user.findOne({ where: { id } });
+    if (!currentUser) throw ApiError.BadRequest('Tokio naudotojo nera');
+
+    const userDto = await UserDto.init(currentUser);
+    return userDto;
   }
 
   /**
