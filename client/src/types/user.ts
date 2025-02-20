@@ -1,12 +1,9 @@
 export interface IUser {
-  id: string;
-  first_name: string;
-  email: string;
-  role: string;
+  id: string | null;
+  role: string | null;
 }
 
 export interface IAuthResponse {
   accessToken: string;
-  refreshToken: string;
   user: IUser;
 }

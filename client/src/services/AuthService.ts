@@ -52,8 +52,12 @@ export default class AuthService {
     return response.data;
   }
 
-  static async refresh(accessToken: string): Promise<{ accessToken: string }> {
+  /**
+   * Refreshinam access tokena
+   * @returns accessToken kaip stringa
+   */
+  static async refresh(): Promise<string> {
     const response = await $api.post(`${USER_URL}/refresh`);
-    return response.data.message;
+    return response.data.accessToken;
   }
 }

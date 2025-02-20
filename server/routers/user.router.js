@@ -17,24 +17,11 @@ userRouter.post("/logout", userController.logout);
 // atnaujinam tokena
 userRouter.post("/refresh", userController.refresh);
 
-// naudotoju sarasas - gali gauti tik autorizuoti naudotojai
-// userRouter.get('/', userController.getAll);
-// // naudotojas paga id
-// userRouter.get('/:id', userController.getUserById);
+// naudotojas pagal id
+// tik adminas ir pats naudotojas (id turi sutapti su prisijungusio id)
+userRouter.get("/:id", userController.getUserById);
 
-// // sukuriam nauja
-// userRouter.post('/', validator.register, userController.register);
-
-// // prisijungimas
-// userRouter.post('/login', validator.login, userController.login);
-
-// // atsijungimas
-// userRouter.post('/logout', userController.logout);
-
-// // naudotojo modifikavimas
-// userRouter.put('/:id', userController.updateUser);
-
-// // istrinam
-// userRouter.delete('/:id', userController.deleteUser);
+// visi naudotojai - tik adminas
+userRouter.get("/", userController.getAllUsers);
 
 module.exports = userRouter;

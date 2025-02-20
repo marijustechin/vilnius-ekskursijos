@@ -56,7 +56,9 @@ class UserController {
         httpOnly: true,
       });
 
-      return res.status(200).json(loggedUser);
+      return res
+        .status(200)
+        .json({ accessToken: loggedUser.accessToken, user: loggedUser.user });
     } catch (e) {
       next(e);
     }
@@ -73,8 +75,7 @@ class UserController {
     try {
       const { refreshToken } = req.cookies;
 
-      if (!refreshToken)
-        throw ApiError.UnregisteredError("Neprisijungęs naudotojas");
+      if (!refreshToken) throw ApiError.UnauthorizedError();
 
       // patikrinam, ar tokenas validus
       const userData = tokenService.validateRefreshToken(refreshToken);
@@ -95,19 +96,43 @@ class UserController {
     try {
       const { refreshToken } = req.cookies;
 
-      if (!refreshToken)
+      if (!refreshToken) {
+        res.clearCookie("refreshToken"); // ✅ Ensure old token is removed
         throw ApiError.UnauthorizedError("Neprisijungęs naudotojas");
+      }
 
       const userData = await userService.tokenRefresh(refreshToken);
 
-      // refreshToken dedam i cookies
+      if (!userData) {
+        res.clearCookie("refreshToken"); // ✅ Remove invalid token
+        throw ApiError.UnauthorizedError("Netinkamas atnaujinimo tokenas");
+      }
+
+      // ✅ Store new refresh token
       res.cookie("refreshToken", userData.refreshToken, {
-        maxAge: 24 * 60 * 60 * 1000, // 1 diena
-        // httpOnly pasako serveriui, kad cookie esanti informacija
-        // neturi buti siunciama uz serverio ribu
-        // ir kad serveris turi nerodyti, kas viduje
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
         httpOnly: true,
+        secure: process.env.NODE_ENV === "production", // Secure only in production
+        sameSite: "Strict",
       });
+
+      return res
+        .status(200)
+        .json({ accessToken: userData.accessToken, user: userData.user });
+    } catch (e) {
+      res.clearCookie("refreshToken"); // ✅ Always remove invalid tokens
+      next(e);
+    }
+  }
+
+  async getUserById(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { refreshToken } = req.cookies;
+
+      if (!refreshToken) throw ApiError.UnauthorizedError();
+
+      const userData = await userService.getUserById(id, refreshToken);
 
       return res.status(200).json(userData);
     } catch (e) {
@@ -115,24 +140,9 @@ class UserController {
     }
   }
 
-  // async refresh(req, res, next) {
-  //   try {
-
-  //     // refreshToken dedam i cookies
-  //     res.cookie("refreshToken", userData.refreshToken, {
-  //       maxAge: 24 * 60 * 60 * 1000, // 1 diena
-  //       // httpOnly pasako serveriui, kad cookie esanti informacija
-  //       // neturi buti siunciama uz serverio ribu
-  //       // ir kad serveris turi nerodyti, kas viduje
-  //       httpOnly: true,
-  //     });
-
-  //     res.status(200).json(userData);
-  //   } catch (e) {
-  //     next(e);
-  //   }
-
-  // }
+  async getAllUsers(req, res, next) {
+    return res.status(200).json("visi useriai");
+  }
 }
 
 module.exports = new UserController();

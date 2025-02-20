@@ -102,7 +102,10 @@ class UserService {
 
     await tokenService.saveRefreshToken(userDto.id, tokens.refreshToken);
 
-    return { ...tokens, user: { id: userDto.id, role: userDto.role } };
+    return {
+      ...tokens,
+      user: { id: userDto.id, role: userDto.role },
+    };
   }
 
   async tokenRefresh(refreshToken) {
@@ -121,7 +124,14 @@ class UserService {
 
     await tokenService.saveRefreshToken(userDto.id, tokens.refreshToken);
 
-    return { ...tokens, user: { id: userDto.id, role: userDto.role } };
+    return {
+      ...tokens,
+      user: { id: userDto.id, role: userDto.role },
+    };
+  }
+
+  async getUserById(id, refreshToken) {
+    // 1 patikrinam, ar id ir id is tokeno sutampa arba refreshTokeno role yra adminas
   }
 
   /**

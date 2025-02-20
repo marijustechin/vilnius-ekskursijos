@@ -8,12 +8,8 @@ module.exports = class ApiError extends Error {
     this.errors = errors;
   }
 
-  static UnregisteredError() {
-    return new ApiError(401, "Neregistruotas naudotojas");
-  }
-
   static UnauthorizedError() {
-    return new ApiError(403, "Neautorizuotas naudotojas");
+    return new ApiError(401, "Neautorizuotas naudotojas");
   }
 
   static BadRequest(message, errors = []) {

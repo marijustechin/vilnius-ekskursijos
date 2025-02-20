@@ -1,11 +1,11 @@
-import * as z from 'zod';
-import { UserLogin } from '../../schemas/user';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { RootState, useAppDispatch, useAppSelector } from '../../store/store';
-
-import { loginUser } from '../../store/features/user/authSlice';
-import { useEffect } from 'react';
+import * as z from "zod";
+import { UserLogin } from "../../schemas/user";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { RootState, useAppDispatch, useAppSelector } from "../../store/store";
+import { loginUser, selectUser } from "../../store/features/user/authSlice";
+import { useEffect } from "react";
+import { useNavigate } from "react-router";
 
 interface LoginFormProps {
   onClose: () => void;
@@ -13,7 +13,9 @@ interface LoginFormProps {
 
 export const LoginForm = ({ onClose }: LoginFormProps) => {
   const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
   const { status, error } = useAppSelector((state: RootState) => state.auth);
+  const navigate = useNavigate();
 
   const {
     register,
@@ -23,8 +25,8 @@ export const LoginForm = ({ onClose }: LoginFormProps) => {
   } = useForm<z.infer<typeof UserLogin>>({
     resolver: zodResolver(UserLogin),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
   });
 
@@ -32,12 +34,28 @@ export const LoginForm = ({ onClose }: LoginFormProps) => {
     dispatch(loginUser({ email: formData.email, password: formData.password }));
   };
 
-  // 🔹 Update form error when Redux state error changes
+  // redux klaidas sinchronizuojam su formos klaidomis
   useEffect(() => {
     if (error) {
-      setError('root', { message: error });
+      setError("root", { message: error });
     }
   }, [error, setError]);
+
+  // jei viskas ok, redirectinam
+  useEffect(() => {
+    if (status === "succeeded") {
+      // ar useris, ar adminas
+      if (user.role === "ADMIN") {
+        navigate("/suvestine");
+        return;
+      }
+
+      if (user.role === "USER") {
+        navigate("/profilis");
+        return;
+      }
+    }
+  }, [status, user, navigate]);
 
   return (
     <form className="auth-form" noValidate onSubmit={handleSubmit(onSubmit)}>
@@ -48,7 +66,7 @@ export const LoginForm = ({ onClose }: LoginFormProps) => {
         )}
       </div>
 
-      {/* ---------- el pastas ----------- */}
+      {/* ---------- el. pastas ----------- */}
       <div>
         <label htmlFor="email">El. paštas</label>
         <input
@@ -56,29 +74,37 @@ export const LoginForm = ({ onClose }: LoginFormProps) => {
           id="email"
           className="form-input"
           type="email"
-          {...register('email')}
+          {...register("email")}
         />
         {errors.email && (
           <span className="form-error">{errors.email.message}</span>
         )}
       </div>
-      {/* ---------- slaptazodis -------------- */}
+
+      {/* ---------- Slaptazodis -------------- */}
       <div>
         <label htmlFor="password">Slaptažodis</label>
         <input
           id="password"
           className="form-input"
           type="password"
-          {...register('password')}
+          {...register("password")}
         />
         {errors.password && (
           <span className="form-error">{errors.password.message}</span>
         )}
       </div>
+
+      {/* ---------- darom submita -------------- */}
       <div className="flex flex-col gap-2 py-3">
-        <button className="btn-generic" type="submit">
-          Prisijungti
+        <button
+          className="btn-generic"
+          type="submit"
+          disabled={status === "loading"}
+        >
+          {status === "loading" ? "Prisijungimas..." : "Prisijungti"}
         </button>
+
         <div className="flex gap-2 justify-center">
           <span>Pirmas kartas?</span>
           <button type="button" onClick={onClose} className="btn-link">
