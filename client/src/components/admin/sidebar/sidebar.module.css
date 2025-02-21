@@ -1,0 +1,23 @@
+.aside {
+  height: calc(100vh - 20rem);
+  border: 1px solid violet;
+  padding: 1rem;
+  color: #555;
+}
+
+.sidebarList {
+  padding: 0.5rem;
+}
+
+.sidebarListItem {
+  padding: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.sidebarListItem.active,
+.sidebarListItem:hover {
+  background-color: bisque;
+}
