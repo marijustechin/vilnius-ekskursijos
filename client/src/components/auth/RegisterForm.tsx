@@ -1,10 +1,10 @@
-import * as z from 'zod';
-import { UserRegister } from '../../schemas/user';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import UserService from '../../services/UserService';
-import HelperService from '../../services/HelperService';
-import toast from 'react-hot-toast';
+import * as z from "zod";
+import { UserRegister } from "../../schemas/user";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import HelperService from "../../services/HelperService";
+import toast from "react-hot-toast";
+import AuthService from "../../services/AuthService";
 
 interface RegisterFormProps {
   onClose: () => void;
@@ -19,9 +19,9 @@ export const RegisterForm = ({ onClose }: RegisterFormProps) => {
   } = useForm<z.infer<typeof UserRegister>>({
     resolver: zodResolver(UserRegister),
     defaultValues: {
-      first_name: '',
-      email: '',
-      password: '',
+      first_name: "",
+      email: "",
+      password: "",
     },
   });
 
@@ -30,11 +30,11 @@ export const RegisterForm = ({ onClose }: RegisterFormProps) => {
   ) => {
     const { first_name, email, password } = formData;
     try {
-      await UserService.register(first_name, email, password);
-      toast.success('Registracija sėkminga! Prašome prisijungti.');
+      await AuthService.register(first_name, email, password);
+      toast.success("Registracija sėkminga! Prašome prisijungti.");
       onClose();
     } catch (e: unknown) {
-      setError('root', { message: HelperService.errorToString(e) });
+      setError("root", { message: HelperService.errorToString(e) });
     }
   };
 
@@ -54,7 +54,7 @@ export const RegisterForm = ({ onClose }: RegisterFormProps) => {
           id="first_name"
           className="form-input"
           type="text"
-          {...register('first_name')}
+          {...register("first_name")}
         />
         {errors.first_name && (
           <span className="form-error">{errors.first_name.message}</span>
@@ -68,7 +68,7 @@ export const RegisterForm = ({ onClose }: RegisterFormProps) => {
           id="email"
           className="form-input"
           type="email"
-          {...register('email')}
+          {...register("email")}
         />
         {errors.email && (
           <span className="form-error">{errors.email.message}</span>
@@ -81,7 +81,7 @@ export const RegisterForm = ({ onClose }: RegisterFormProps) => {
           id="password"
           className="form-input"
           type="password"
-          {...register('password')}
+          {...register("password")}
         />
         {errors.password && (
           <span className="form-error">{errors.password.message}</span>
