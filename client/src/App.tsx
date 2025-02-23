@@ -1,13 +1,14 @@
-import { BrowserRouter, Route, Routes } from "react-router";
-import { MainLayout } from "./layouts/MainLayout";
-import { HomePage } from "./pages/HomePage";
-import { LoginRegisterPage } from "./pages/LoginRegisterPage";
-import { AdminLayout } from "./layouts/AdminLayout";
-import { AdminHomePage } from "./pages/admin/AdminHomePage";
-import { ProfilePage } from "./pages/ProfilePage";
-import { useAppDispatch } from "./store/store";
-import { useEffect } from "react";
-import { restoreSession } from "./store/features/user/authSlice";
+import { BrowserRouter, Route, Routes } from 'react-router';
+import { MainLayout } from './layouts/MainLayout';
+import { HomePage } from './pages/HomePage';
+import { LoginRegisterPage } from './pages/LoginRegisterPage';
+import { AdminLayout } from './layouts/AdminLayout';
+import { AdminHomePage } from './pages/admin/AdminHomePage';
+import { ProfilePage } from './pages/ProfilePage';
+import { useAppDispatch } from './store/store';
+import { useEffect } from 'react';
+import { restoreSession } from './store/features/user/authSlice';
+import { UsersPage } from './pages/admin/UsersPage';
 
 function App() {
   // pasileidziant programai automatiskai atnaujinam
@@ -30,6 +31,7 @@ function App() {
         </Route>
         <Route path="/suvestine" element={<AdminLayout />}>
           <Route index element={<AdminHomePage />} />
+          <Route path="naudotojai" element={<UsersPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
